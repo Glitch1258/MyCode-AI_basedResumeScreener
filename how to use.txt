@@ -1,6 +1,0 @@
-How to use:
-1 Prepare a folder containing PDF resumes
-2 Paste your job description
-3 Click "Screen Resumes" to start the process
-4 Review the ranked results with similarity scores and categories
-5 Click "Save Results" to export to CSV
