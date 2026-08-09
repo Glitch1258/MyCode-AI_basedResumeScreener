@@ -8,9 +8,9 @@ How to use:
 
 
 
-1 Open CMD and navigate to file location and type "python resume\_screener.py"
+1 Open CMD and navigate to file location and type "python resumeScreenerWrapper.py"
 
-2 Open browser and go to http://localhost:7860
+2 Wait for the application to launch
 
 3 Prepare a folder containing PDF resumes
 
