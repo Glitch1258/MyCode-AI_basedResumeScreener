@@ -2,7 +2,7 @@
 import webview
 import threading
 import time
-from resume_screener import create_gradio_interface
+from app import create_gradio_interface
 
 def run_gradio():
     """Launch the Gradio interface"""
