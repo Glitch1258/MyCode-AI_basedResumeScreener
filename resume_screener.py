@@ -39,6 +39,7 @@ nltk.download('punkt_tab')
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
 """
 here the lighter version of SBERT is being used :  sentence_model_name: str = 'all-MiniLM-L6-v2'
 here the heavier version of BERT  is being  used :  cross_encoder_model_name: str = 'cross-encoder/ms-marco-MiniLM-L-12-v2'
@@ -135,7 +136,9 @@ class ResumeScreeningSystem:
             if token not in self.stopwords and len(token) > 2:
                 lemma = self.lemmatizer.lemmatize(token)
                 processed_tokens.append(lemma)
-        print(processed_tokens)  # use these  for filtering
+
+        # NOTE: was `print(...)` before — moved to DEBUG so it doesn't spam
+        logger.debug(f"preprocess_text → {len(processed_tokens)} tokens")
         return ' '.join(processed_tokens)
 
     def process_resume_files(self, file_paths: List[str]) -> Dict:
@@ -152,6 +155,7 @@ class ResumeScreeningSystem:
                 pdf_path = Path(path)
                 raw_text = self.extract_text_from_file(str(pdf_path))
                 if not raw_text:
+                    logger.warning(f"Empty text extracted, skipping: {pdf_path.name}")
                     continue
 
                 processed_text = self.preprocess_text(raw_text)
@@ -173,10 +177,14 @@ class ResumeScreeningSystem:
         return self.sentence_model.encode(texts, convert_to_tensor=False)
 
     def extract_keywords(self, text: str, top_k: int = 30) -> List[str]:
-        """Extract keywords using RAKE."""
-        self.rake.extract_keywords_from_text(text)
-        keywords = self.rake.get_ranked_phrases()[:top_k]
-        return keywords
+        """Extract keywords using RAKE. Non-fatal on failure — returns []."""
+        try:
+            self.rake.extract_keywords_from_text(text)
+            keywords = self.rake.get_ranked_phrases()[:top_k]
+            return keywords or []
+        except Exception as e:
+            logger.warning(f"RAKE keyword extraction failed (non-fatal): {e}")
+            return []
 
     def screen_resumes(self, resume_files: List[str], job_description: str,
                        use_reranker: bool = True) -> pd.DataFrame:
@@ -208,8 +216,8 @@ class ResumeScreeningSystem:
         resume_texts = [data['processed_text'] for data in resume_data.values()]
         resume_embeddings = self.compute_embeddings(resume_texts)
 
-        print("Time taken to screen all resumes --- %s seconds ---"
-              % (time.time() - start_time_resume_screening))
+        logger.info("Time taken to screen all resumes --- %s seconds ---"
+                    % (time.time() - start_time_resume_screening))
 
         jd_embedding = self.compute_embeddings([processed_jd])[0]
 
@@ -245,8 +253,8 @@ class ResumeScreeningSystem:
                 for result, score in zip(top_results, cross_scores):
                     result['cross_encoder_score'] = float(score)
                 top_results.sort(key=lambda x: x['cross_encoder_score'], reverse=True)
-                print("Time taken to re-rank using cross encoder BERT --- %s seconds ---"
-                      % (time.time() - start_time_crossencoder_reranking))
+                logger.info("Time taken to re-rank using cross encoder BERT --- %s seconds ---"
+                            % (time.time() - start_time_crossencoder_reranking))
         else:
             logger.info("Reranker OFF — using Sentence-BERT similarity only.")
             # Keep same keys so downstream code doesn't KeyError
@@ -269,10 +277,11 @@ class ResumeScreeningSystem:
                 result['category'] = 'N/A (Reranker OFF)'
 
         # Store results — full data kept regardless of display.
-        # We also attach the FULL keyword list (not just top-5) on the DataFrame
-        # via .attrs so the viewer can highlight every keyword, not just 5.
+        # We also attach per-row keyword and processed-text lists via .attrs
+        # so the keyword filter and PDF highlighter can access them by row_id.
         rows = []
         full_keyword_lists = []
+        full_processed_texts = []
         for i, r in enumerate(top_results):
             rows.append({
                 'row_id': i,
@@ -284,16 +293,15 @@ class ResumeScreeningSystem:
                     else float('nan')
                 ),
                 'Category': r.get('category', 'Not Processed'),
-                'Extracted Keywords': ', '.join(r.get('keywords', [])[:5]),  # display: top 5
+                'Extracted Keywords': ', '.join(r.get('keywords', [])[:5]),
                 'PDF Path': r['pdf_path'],
             })
-            full_keyword_lists.append(list(r.get('keywords', [])))  # FULL list
+            full_keyword_lists.append(list(r.get('keywords', [])))
+            full_processed_texts.append(r.get('processed_text', ''))
 
         self.results = pd.DataFrame(rows)
-
-        # .attrs survives DataFrame slicing and is carried in gr.State.
-        # We store the full keyword list per row here.
         self.results.attrs['full_keywords'] = full_keyword_lists
+        self.results.attrs['processed_texts'] = full_processed_texts
 
         logger.info(f"Screening complete. Found {len(self.results)} candidates.")
-        return self.results
+        return self.results          # ← THIS WAS MISSING

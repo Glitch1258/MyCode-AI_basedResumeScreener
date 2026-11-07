@@ -7,7 +7,7 @@ from datetime import datetime
 import gradio as gr
 import pandas as pd
 
-from pdf_viewer import get_keywords_for_row, highlight_keywords_in_pdf
+from pdf_viewer import highlight_keywords_in_pdf
 from resume_screener import ResumeScreeningSystem
 from ui_helpers import EMPTY_PREVIEW_HTML, slot_from_state
 
@@ -19,28 +19,33 @@ def _path(f):
 
 
 def _empty_results(msg):
+    """Returns 13 outputs matching process_resumes."""
     return (
-        pd.DataFrame(columns=["Candidate Name"]),
-        None,
-        EMPTY_PREVIEW_HTML,
-        None,
-        EMPTY_PREVIEW_HTML,
-        None,
-        1,
-        msg,
-        "### Preview Slot 1",
-        "### Preview Slot 2",
+        pd.DataFrame(columns=["Candidate Name"]),  # results_output
+        None,                                      # full_results_state
+        None,                                      # view_state
+        EMPTY_PREVIEW_HTML,                        # slot1_html
+        None,                                      # slot1_state
+        EMPTY_PREVIEW_HTML,                        # slot2_html
+        None,                                      # slot2_state
+        1,                                         # active_slot_state
+        msg,                                       # summary
+        "### Preview Slot 1",                      # slot1_title
+        "### Preview Slot 2",                      # slot2_title
+        [],                                        # keyword_choices_state
+        gr.update(choices=[], value=[]),           # active_filters_cb
     )
 
 
 def process_resumes(resume_dir, jd_file, top_n, use_reranker, progress=gr.Progress()):
-    """Screen resumes. Outputs (10):
-        display_df, full_results_state,
+    """Screen resumes. Outputs (13):
+        display_df, full_results_state, view_state,
         slot1_html, slot1_state,
         slot2_html, slot2_state,
         active_slot_state,
         summary,
-        slot1_title, slot2_title
+        slot1_title, slot2_title,
+        keyword_choices_state, active_filters_cb
     """
     if not resume_dir or not jd_file:
         return _empty_results("⚠️ Please select a resume folder and a job description file.")
@@ -69,7 +74,6 @@ def process_resumes(resume_dir, jd_file, top_n, use_reranker, progress=gr.Progre
         )
 
         progress(0.9, desc="Generating summary...")
-
         top_name = results_df.iloc[0]['Candidate Name'] if not results_df.empty else 'N/A'
         if use_reranker and not results_df.empty:
             top_score = f"{results_df.iloc[0]['Final Cross-Encoder Score']:.3f}"
@@ -99,10 +103,8 @@ def process_resumes(resume_dir, jd_file, top_n, use_reranker, progress=gr.Progre
            - Top N candidates passed to Cross-Encoder: {system.top_n}
 
            ### Tip
-           Click any **Candidate Name** to load it into one of the two preview slots.
-           Each new click alternates between the two slots.
-           Use **Open in new tab ↗** under a preview to open the highlighted
-           resume in a new browser tab.
+           Add **filter keywords** above to narrow results. Each click on a
+           Candidate Name loads their highlighted PDF into alternating preview slots.
            """
 
         progress(1.0, desc="Complete!")
@@ -111,6 +113,7 @@ def process_resumes(resume_dir, jd_file, top_n, use_reranker, progress=gr.Progre
         return (
             display_df,
             results_df,
+            results_df.copy(),                # view_state starts = full, sorted
             EMPTY_PREVIEW_HTML,
             None,
             EMPTY_PREVIEW_HTML,
@@ -119,6 +122,8 @@ def process_resumes(resume_dir, jd_file, top_n, use_reranker, progress=gr.Progre
             summary,
             "### Preview Slot 1",
             "### Preview Slot 2",
+            [],                                # reset filter choices
+            gr.update(choices=[], value=[]),   # reset active filters
         )
 
     except Exception as e:
@@ -129,7 +134,6 @@ def process_resumes(resume_dir, jd_file, top_n, use_reranker, progress=gr.Progre
 def save_results(full_results_df):
     if full_results_df is None or full_results_df.empty:
         return "No results to save."
-
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     filename = f"resume_screening_results_{timestamp}.csv"
     to_save = full_results_df.drop(columns=["row_id"], errors="ignore")
@@ -137,15 +141,17 @@ def save_results(full_results_df):
     return f"Results saved to {filename} (full data with all columns)"
 
 
-def on_row_select(full_results_df, slot1, slot2, active_slot, evt: gr.SelectData):
-    """Row click → rotate which slot receives the next PDF."""
-    print(f">>> ROW SELECT FIRED. evt.index = {evt.index} active_slot={active_slot}")
+def on_row_select(view_df, slot1, slot2, active_slot, evt: gr.SelectData):
+    """Row click → rotate which slot receives the next PDF.
 
+    Now indexes into `view_df` (filtered/sorted), then uses the row's `row_id`
+    to look up the FULL keyword list from `attrs['full_keywords']`.
+    """
     def _unchanged(msg=""):
         return (gr.update(), slot1, gr.update(), slot2,
                 active_slot, msg, gr.update(), gr.update())
 
-    if full_results_df is None or getattr(full_results_df, "empty", True):
+    if view_df is None or getattr(view_df, "empty", True):
         return _unchanged("")
 
     try:
@@ -153,16 +159,33 @@ def on_row_select(full_results_df, slot1, slot2, active_slot, evt: gr.SelectData
     except Exception:
         return _unchanged("")
 
-    if row < 0 or row >= len(full_results_df):
+    if row < 0 or row >= len(view_df):
         return _unchanged("")
 
-    pdf_path, keywords, candidate_name = get_keywords_for_row(full_results_df, row)
+    row_data = view_df.iloc[row]
+    pdf_path = row_data.get("PDF Path")
+    candidate_name = row_data.get("Candidate Name")
+
     try:
-        full_kw_lists = full_results_df.attrs.get("full_keywords")
-        if full_kw_lists is not None and row < len(full_kw_lists):
-            keywords = full_kw_lists[row]
+        row_id = int(row_data["row_id"])
+    except (KeyError, ValueError, TypeError):
+        row_id = row
+
+    # Prefer full keyword list indexed by row_id
+    keywords = []
+    try:
+        full_kw_lists = view_df.attrs.get("full_keywords")
+        if full_kw_lists is not None and 0 <= row_id < len(full_kw_lists):
+            keywords = list(full_kw_lists[row_id])
     except Exception:
         pass
+
+    if not keywords:
+        raw = row_data.get("Extracted Keywords", "") or ""
+        if isinstance(raw, (list, tuple)):
+            keywords = [str(k) for k in raw]
+        else:
+            keywords = [k.strip() for k in str(raw).split(",") if k.strip()]
 
     if not pdf_path:
         return _unchanged("No PDF path for this candidate.")
