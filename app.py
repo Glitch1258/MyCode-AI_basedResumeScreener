@@ -16,6 +16,30 @@ from ui_helpers import EMPTY_PREVIEW_HTML
 
 logger = logging.getLogger(__name__)
 
+CSS = """
+.top-row {
+    height: 30vh !important;
+    max-height: 30vh !important;
+    min-height: 30vh !important;
+    overflow: hidden !important;
+}
+.top-row > * {
+    height: 100% !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+}
+.filter-block {
+    display: flex !important;
+    flex-direction: column !important;
+}
+.filter-block .filter-checkbox {
+    flex: 1 1 auto !important;
+    min-height: 80px !important;
+    overflow-y: auto !important;
+}
+.name-table { max-height: 760px; overflow-y: auto; }
+"""
+
 
 def create_gradio_interface():
     try:
@@ -27,40 +51,32 @@ def create_gradio_interface():
 
     with gr.Blocks(
             title="Resume Screening System",
-            css=".name-table { max-height: 760px; overflow-y: auto; }",
+            css=CSS,
             theme=gr.themes.Soft(),
     ) as interface:
-        gr.Markdown("""
-        # 📄 Resume Screening System
-        Select a folder containing PDF/DOCX resumes and a job description file to automatically screen and rank candidates.
-        """)
-
         # ---- State ----
         full_results_state = gr.State(value=None)
-        view_state = gr.State(value=None)  # filtered+sorted view
-        keyword_choices_state = gr.State(value=[])  # all keywords shown in checkbox
+        view_state = gr.State(value=None)
+        keyword_choices_state = gr.State(value=[])
         slot1_state = gr.State(value=None)
         slot2_state = gr.State(value=None)
         active_slot_state = gr.State(value=1)
 
-        # ---- Inputs ----
-        with gr.Row():
-            with gr.Column(scale=2):
+        # ---- Top inline row (30vh total) ----
+        # Order: resume | filter block | jd | top-N
+        with gr.Row(elem_classes=["top-row"]):
+            # 30 % — resume folder
+            with gr.Column(scale=3):
                 resume_dir = gr.File(
                     label="Resume Folder (select a folder containing PDF/DOCX files)",
                     file_count="multiple", file_types=[".pdf", ".docx"], height=200,
                 )
-            with gr.Column(scale=2):
-                jd_file = gr.File(
-                    label="Job Description File (PDF / DOCX)",
-                    file_count="single", file_types=[".pdf", ".docx"],
-                )
-
-                # ---- NEW: Keyword filter controls ----
+            # 30 % — filter block (single unit)
+            with gr.Column(scale=3, elem_classes=["filter-block"]):
                 filter_keywords_input = gr.Textbox(
                     label="🔎 Filter keywords",
-                    placeholder="e.g. python, machine learning, sql (comma-separated, max 25)",
-                    info="Filters by the preprocessed resume text. Case-insensitive; phrases supported.",
+                    placeholder="e.g. python, machine learning, sql",
+                    info="Comma-separated; case-insensitive; phrases OK.",
                     lines=1,
                 )
                 with gr.Row():
@@ -68,21 +84,27 @@ def create_gradio_interface():
                     clear_filters_btn = gr.Button("✖ Clear all filters", size="sm", variant="stop")
                 active_filters_cb = gr.CheckboxGroup(
                     choices=[], value=[],
-                    label=f"Active filters — click to toggle (max {MAX_FILTER_KEYWORDS})",
-                    info="Unchecked keywords stay in the list but no longer filter. "
-                         "Use 'Clear all filters' to wipe the list.",
+                    label=f"Active filters (max {MAX_FILTER_KEYWORDS})",
+                    elem_classes=["filter-checkbox"],
                 )
                 filter_status = gr.Markdown("")
-
+            # 30 % — job description
+            with gr.Column(scale=3):
+                jd_file = gr.File(
+                    label="Job Description File (PDF / DOCX)",
+                    file_count="single", file_types=[".pdf", ".docx"],
+                )
+            # 10 % — top N + reranker
             with gr.Column(scale=1):
                 top_n = gr.Number(
-                    label="Top N Candidates", value=100, minimum=1, maximum=500, step=1,
+                    label="Top N", value=100, minimum=1, maximum=500, step=1,
                 )
                 use_reranker = gr.Checkbox(
-                    label="Rerank with Cross-Encoder (BERT)", value=True,
-                    info="OFF = Sentence-BERT only (faster).",
+                    label="Rerank (BERT)", value=True,
+                    info="OFF = SBERT only.",
                 )
 
+        # ---- Action row ----
         with gr.Row():
             process_btn = gr.Button("🔍 Screen Resumes", variant="primary", scale=2)
             save_btn = gr.Button("💾 Save Results", variant="secondary", scale=1)
@@ -130,14 +152,14 @@ def create_gradio_interface():
                 ### Keyword filtering
                 - Type comma-separated keywords and click **➕ Add keywords** (max {MAX_FILTER_KEYWORDS}).
                 - Results are filtered to candidates whose preprocessed resume text contains at least one keyword.
-                - **Uncheck** a keyword to temporarily disable it, or click **✖ Clear all filters** to start over.
+                - **Uncheck** a keyword to temporarily disable it.
+                - Click **✖ Clear all filters** to start over.
                 - When no filters are active, results are ranked by Cross-Encoder score
                   (or Sentence-BERT if reranker is OFF).
                 """)
 
         # ---- Event wiring ----
 
-        # 1) Screen resumes → also reset filters
         process_btn.click(
             fn=lambda: gr.update(
                 value="⏳ **Screening resumes…** This can take a minute depending on file count and whether reranking is ON.",
@@ -163,7 +185,6 @@ def create_gradio_interface():
 
         save_btn.click(fn=save_results, inputs=[full_results_state], outputs=[save_status])
 
-        # 2) Add keywords → updates choices + checkbox, triggers .change which re-filters
         add_filters_btn.click(
             fn=add_keywords,
             inputs=[keyword_choices_state, active_filters_cb, filter_keywords_input],
@@ -173,14 +194,12 @@ def create_gradio_interface():
             ],
         )
 
-        # 3) Checkbox change (uncheck → deactivate, check → reactivate) → re-filter
         active_filters_cb.change(
             fn=on_filters_changed,
             inputs=[full_results_state, active_filters_cb],
             outputs=[results_output, view_state],
         )
 
-        # 4) Clear all filters → reset UI + unfilter
         clear_filters_btn.click(
             fn=clear_all_filters,
             inputs=[full_results_state],
@@ -190,7 +209,6 @@ def create_gradio_interface():
             ],
         )
 
-        # 5) Row select → uses view_state (filtered) + attrs for full keywords
         results_output.select(
             fn=on_row_select,
             inputs=[view_state, slot1_state, slot2_state, active_slot_state],
@@ -200,7 +218,6 @@ def create_gradio_interface():
             ],
         )
 
-        # 6) Clear slots (unchanged)
         clear1_btn.click(
             fn=clear_slot1,
             inputs=[slot2_state, active_slot_state],
