@@ -22,18 +22,18 @@ def _empty_results(msg):
     """Returns 13 outputs matching process_resumes."""
     return (
         pd.DataFrame(columns=["Candidate Name"]),  # results_output
-        None,                                      # full_results_state
-        None,                                      # view_state
-        EMPTY_PREVIEW_HTML,                        # slot1_html
-        None,                                      # slot1_state
-        EMPTY_PREVIEW_HTML,                        # slot2_html
-        None,                                      # slot2_state
-        1,                                         # active_slot_state
-        msg,                                       # summary
-        "### Preview Slot 1",                      # slot1_title
-        "### Preview Slot 2",                      # slot2_title
-        [],                                        # keyword_choices_state
-        gr.update(choices=[], value=[]),           # active_filters_cb
+        None,  # full_results_state
+        None,  # view_state
+        EMPTY_PREVIEW_HTML,  # slot1_html
+        None,  # slot1_state
+        EMPTY_PREVIEW_HTML,  # slot2_html
+        None,  # slot2_state
+        1,  # active_slot_state
+        msg,  # summary
+        "### Preview Slot 1",  # slot1_title
+        "### Preview Slot 2",  # slot2_title
+        [],  # keyword_choices_state
+        gr.update(choices=[], value=[]),  # active_filters_cb
     )
 
 
@@ -104,7 +104,8 @@ def process_resumes(resume_dir, jd_file, top_n, use_reranker, progress=gr.Progre
 
            ### Tip
            Add **filter keywords** above to narrow results. Each click on a
-           Candidate Name loads their highlighted PDF into alternating preview slots.
+           Candidate Name loads their highlighted PDF into the first available preview slot.
+           Clear a slot (✖) to free it up.
            """
 
         progress(1.0, desc="Complete!")
@@ -113,7 +114,7 @@ def process_resumes(resume_dir, jd_file, top_n, use_reranker, progress=gr.Progre
         return (
             display_df,
             results_df,
-            results_df.copy(),                # view_state starts = full, sorted
+            results_df.copy(),  # view_state starts = full, sorted
             EMPTY_PREVIEW_HTML,
             None,
             EMPTY_PREVIEW_HTML,
@@ -122,8 +123,8 @@ def process_resumes(resume_dir, jd_file, top_n, use_reranker, progress=gr.Progre
             summary,
             "### Preview Slot 1",
             "### Preview Slot 2",
-            [],                                # reset filter choices
-            gr.update(choices=[], value=[]),   # reset active filters
+            [],  # reset filter choices
+            gr.update(choices=[], value=[]),  # reset active filters
         )
 
     except Exception as e:
@@ -142,17 +143,29 @@ def save_results(full_results_df):
 
 
 def on_row_select(view_df, slot1, slot2, active_slot, evt: gr.SelectData):
-    """Row click → rotate which slot receives the next PDF.
+    """Row click → load PDF into the first available (empty) preview slot.
 
-    Now indexes into `view_df` (filtered/sorted), then uses the row's `row_id`
-    to look up the FULL keyword list from `attrs['full_keywords']`.
+    New behaviour:
+      - If BOTH slots are filled   → do nothing, show a hint to clear one.
+      - If slot1 is empty          → fill slot1 (preferred).
+      - Else (only slot2 empty)    → fill slot2.
+    active_slot is kept for backward compatibility with the state graph;
+    the actual fill decision is driven purely by which slots are empty.
     """
+
     def _unchanged(msg=""):
         return (gr.update(), slot1, gr.update(), slot2,
                 active_slot, msg, gr.update(), gr.update())
 
     if view_df is None or getattr(view_df, "empty", True):
         return _unchanged("")
+
+    # ── NEW: block when both slots are already occupied ──
+    if slot1 is not None and slot2 is not None:
+        return _unchanged(
+            "⚠️ Both preview slots are full. Click **✖ Clear** on one "
+            "slot to load another candidate."
+        )
 
     try:
         row = int(evt.index[0]) if isinstance(evt.index, (list, tuple)) else int(evt.index)
@@ -204,18 +217,24 @@ def on_row_select(view_df, slot1, slot2, active_slot, evt: gr.SelectData):
 
     new_slot_value = (local_preview, pdf_path)
 
-    if active_slot == 1:
-        new_s1, new_s2, new_active = new_slot_value, slot2, 2
+    # ── NEW: fill the first empty slot (slot1 preferred) ──
+    if slot1 is None:
+        target_slot = 1
+        new_s1, new_s2 = new_slot_value, slot2
+        # If slot2 was also empty, slot2 is the next target; otherwise none
+        new_active = 2 if slot2 is None else 1
     else:
-        new_s1, new_s2, new_active = slot1, new_slot_value, 1
+        # slot1 is filled, so slot2 must be the empty one
+        target_slot = 2
+        new_s1, new_s2 = slot1, new_slot_value
+        new_active = 2  # both filled now; next click will be blocked
 
     html1, title1 = slot_from_state(new_s1, 1)
     html2, title2 = slot_from_state(new_s2, 2)
 
     status = (
-        f"Loaded **{candidate_name}** into Slot {active_slot} — "
-        f"{len(keywords)} keyword(s) highlighted. "
-        f"(Next click → Slot {new_active})"
+        f"Loaded **{candidate_name}** into Slot {target_slot} — "
+        f"{len(keywords)} keyword(s) highlighted."
     )
 
     return (
@@ -226,8 +245,12 @@ def on_row_select(view_df, slot1, slot2, active_slot, evt: gr.SelectData):
 
 
 def clear_slot1(slot2, active_slot):
+    # Slot 1 is now empty → next click will target slot 1 (slot1 is preferred).
     return (gr.update(value=EMPTY_PREVIEW_HTML), None, 1, "", "### Preview Slot 1")
 
 
 def clear_slot2(slot1, active_slot):
-    return (gr.update(value=EMPTY_PREVIEW_HTML), None, 2, "", "### Preview Slot 2")
+    # If slot1 is still filled, slot2 is the only free slot → next target = 2.
+    # If slot1 is empty too, slot1 wins (slot1 preferred) → next target = 1.
+    new_active = 1 if slot1 is None else 2
+    return (gr.update(value=EMPTY_PREVIEW_HTML), None, new_active, "", "### Preview Slot 2")

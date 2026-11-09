@@ -1,7 +1,8 @@
-import pandas as pd
-import re
-from fpdf import FPDF
 import os
+import re
+
+import pandas as pd
+from fpdf import FPDF
 
 # ── 1. Load the dataset ──────────────────────────────────────────────
 df = pd.read_csv("resume_dataset.csv")

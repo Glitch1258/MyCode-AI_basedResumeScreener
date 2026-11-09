@@ -1,18 +1,21 @@
 import os
+import random
 import re
 import time
-import random
+
 from jobspy import scrape_jobs
 from reportlab.lib.pagesizes import letter
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 
 OUTPUT_DIR = "output_pdfs"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
+
 def sanitize_filename(name):
     """Clean job title/company for safe file naming."""
     return re.sub(r'[\\/*?:"<>|]', "", name).strip()[:50]
+
 
 def create_pdf(job_title, company, location, job_url, description, file_path):
     """Generate a clean PDF report for a job listing using ReportLab."""
@@ -24,9 +27,9 @@ def create_pdf(job_title, company, location, job_url, description, file_path):
         topMargin=40,
         bottomMargin=40
     )
-    
+
     styles = getSampleStyleSheet()
-    
+
     title_style = ParagraphStyle(
         'JobTitle',
         parent=styles['Heading1'],
@@ -34,7 +37,7 @@ def create_pdf(job_title, company, location, job_url, description, file_path):
         leading=22,
         spaceAfter=10
     )
-    
+
     meta_style = ParagraphStyle(
         'MetaInfo',
         parent=styles['Normal'],
@@ -43,7 +46,7 @@ def create_pdf(job_title, company, location, job_url, description, file_path):
         textColor='#555555',
         spaceAfter=15
     )
-    
+
     body_style = ParagraphStyle(
         'Description',
         parent=styles['BodyText'],
@@ -72,10 +75,11 @@ def create_pdf(job_title, company, location, job_url, description, file_path):
         print(f"Error generating PDF for {job_title}: {e}")
         return False
 
+
 def scrape_and_export_pdfs(search_term, location, total_jobs=10, batch_size=3):
     """Scrapes jobs in tiny batches with long delays to minimize 429 rate-limiting."""
     print(f"Starting job search for '{search_term}' in '{location}'...\n")
-    
+
     total_scraped = 0
     pdf_count = 0
 
@@ -93,7 +97,7 @@ def scrape_and_export_pdfs(search_term, location, total_jobs=10, batch_size=3):
                 fetch_description=True,
                 verbose=0
             )
-            
+
             if jobs.empty:
                 print("No more jobs found.")
                 break
@@ -126,6 +130,7 @@ def scrape_and_export_pdfs(search_term, location, total_jobs=10, batch_size=3):
             time.sleep(wait_time)
 
     print(f"\nCompleted! Total PDFs generated: {pdf_count}")
+
 
 if __name__ == "__main__":
     # Targeted Software Engineering search query

@@ -4,72 +4,92 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1a06ab71-03fa-4212-9e4c-1adf812dba4f" name="Changes" comment="" />
+    <list default="true" id="1a06ab71-03fa-4212-9e4c-1adf812dba4f" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/callbacks.py" beforeDir="false" afterPath="$PROJECT_DIR$/callbacks.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/convert_CSV_resume_to_PDF_resume.py" beforeDir="false" afterPath="$PROJECT_DIR$/convert_CSV_resume_to_PDF_resume.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/depricated_app.py" beforeDir="false" afterPath="$PROJECT_DIR$/depricated_app.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/filter_callbacks.py" beforeDir="false" afterPath="$PROJECT_DIR$/filter_callbacks.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/linkedin_job_scraper_to_pdf.py" beforeDir="false" afterPath="$PROJECT_DIR$/linkedin_job_scraper_to_pdf.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pdf_viewer.py" beforeDir="false" afterPath="$PROJECT_DIR$/pdf_viewer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resumeScreenerWrapper.py" beforeDir="false" afterPath="$PROJECT_DIR$/resumeScreenerWrapper.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resume_filter.py" beforeDir="false" afterPath="$PROJECT_DIR$/resume_filter.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resume_screener.py" beforeDir="false" afterPath="$PROJECT_DIR$/resume_screener.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui_helpers.py" beforeDir="false" afterPath="$PROJECT_DIR$/ui_helpers.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="NextEditCompletionFeaturesState">
     <decayedCancelled>
-      <entry key="MS100" value="1.0000000000001004" />
-      <entry key="MS500" value="1.0031902019528645" />
-      <entry key="S2" value="1.7242576685104365" />
-      <entry key="S5" value="4.736326944831795" />
-      <entry key="S10" value="10.687549432984945" />
-      <entry key="S30" value="29.283410336063458" />
-      <entry key="S60" value="42.09823643066373" />
-      <entry key="M2" value="54.14690928490554" />
-      <entry key="M5" value="66.99538884723437" />
-      <entry key="M10" value="74.39939011254987" />
-      <entry key="M15" value="78.17039842910981" />
-      <entry key="M30" value="83.533288559561" />
-      <entry key="H1" value="87.23420008293657" />
-      <entry key="H2" value="89.45946996208131" />
-      <entry key="H4" value="90.68673296236302" />
-      <entry key="D1" value="91.77481605819177" />
-      <entry key="W1" value="91.96767187341608" />
+      <entry key="MS100" value="1.0" />
+      <entry key="MS500" value="1.0000000000000018" />
+      <entry key="S2" value="1.0007508217887888" />
+      <entry key="S5" value="1.2974241741834553" />
+      <entry key="S10" value="4.271432704960347" />
+      <entry key="S30" value="24.612797953350302" />
+      <entry key="S60" value="50.0937757277972" />
+      <entry key="M2" value="86.09630103743535" />
+      <entry key="M5" value="135.6463183357882" />
+      <entry key="M10" value="163.9490977678081" />
+      <entry key="M15" value="176.26201450783987" />
+      <entry key="M30" value="191.26996014260612" />
+      <entry key="H1" value="200.3475463062466" />
+      <entry key="H2" value="205.44285534275716" />
+      <entry key="H4" value="208.15865062131795" />
+      <entry key="D1" value="210.51725119264793" />
+      <entry key="W1" value="210.9308043454399" />
     </decayedCancelled>
     <decayedSelected>
       <entry key="MS100" value="0.0" />
-      <entry key="MS500" value="3.464135066955321E-160" />
-      <entry key="S2" value="1.3642648953783979E-40" />
-      <entry key="S5" value="1.1322947187586734E-16" />
-      <entry key="S10" value="1.0640933787777604E-8" />
-      <entry key="S30" value="0.0021995132385751208" />
-      <entry key="S60" value="0.0468989684169612" />
-      <entry key="M2" value="0.21656169656003596" />
-      <entry key="M5" value="0.5422913261467959" />
-      <entry key="M10" value="0.7364043224661272" />
-      <entry key="M15" value="0.8154754404820647" />
-      <entry key="M30" value="0.9030367880003923" />
-      <entry key="H1" value="0.9502824780034584" />
-      <entry key="H2" value="0.9748243318688011" />
-      <entry key="H4" value="0.9873319258834882" />
-      <entry key="D1" value="0.9978774228047358" />
-      <entry key="W1" value="0.9996964984866276" />
+      <entry key="MS500" value="3.9095531115112565E-292" />
+      <entry key="S2" value="1.406150414958526E-73" />
+      <entry key="S5" value="7.231238934813407E-30" />
+      <entry key="S10" value="2.689096304488437E-15" />
+      <entry key="S30" value="1.3905996592270083E-5" />
+      <entry key="S60" value="0.0037290744954036727" />
+      <entry key="M2" value="0.061066148522758865" />
+      <entry key="M5" value="0.32682871909356676" />
+      <entry key="M10" value="0.5716893554139066" />
+      <entry key="M15" value="0.6888215683811679" />
+      <entry key="M30" value="0.8299527506919723" />
+      <entry key="H1" value="0.9110174261187169" />
+      <entry key="H2" value="0.9544723286291303" />
+      <entry key="H4" value="0.9769709968208468" />
+      <entry key="D1" value="0.9961244770758878" />
+      <entry key="W1" value="0.9994454320835698" />
     </decayedSelected>
     <decayedShown>
-      <entry key="MS100" value="6.154188230771139E-6" />
-      <entry key="MS500" value="0.09232797285155513" />
-      <entry key="S2" value="1.1933575541402284" />
-      <entry key="S5" value="4.421822214392821" />
-      <entry key="S10" value="10.495977461144609" />
-      <entry key="S30" value="29.20497467130417" />
-      <entry key="S60" value="42.09709571372039" />
-      <entry key="M2" value="54.33097338435116" />
-      <entry key="M5" value="67.51528065530998" />
-      <entry key="M10" value="75.11801205734993" />
-      <entry key="M15" value="78.9710866138586" />
-      <entry key="M30" value="84.42672293402534" />
-      <entry key="H1" value="88.1789229735716" />
-      <entry key="H2" value="90.43129075499051" />
-      <entry key="H4" value="91.67250224073169" />
-      <entry key="D1" value="92.77242412916205" />
-      <entry key="W1" value="92.96732966865501" />
+      <entry key="MS100" value="1.3010175960814776E-5" />
+      <entry key="MS500" value="0.10540388878126504" />
+      <entry key="S2" value="0.5704741450097915" />
+      <entry key="S5" value="1.0902599445154575" />
+      <entry key="S10" value="4.146968752656052" />
+      <entry key="S30" value="24.551966686111623" />
+      <entry key="S60" value="50.05634600251305" />
+      <entry key="M2" value="86.12568025973819" />
+      <entry key="M5" value="135.9489531462494" />
+      <entry key="M10" value="164.50123817253336" />
+      <entry key="M15" value="176.93441617294994" />
+      <entry key="M30" value="192.08906967480996" />
+      <entry key="H1" value="201.25221090578444" />
+      <entry key="H2" value="206.3938717768095" />
+      <entry key="H4" value="209.13381693071304" />
+      <entry key="D1" value="211.5130635911127" />
+      <entry key="W1" value="211.93020490945491" />
     </decayedShown>
   </component>
   <component name="ProjectColorInfo">{
@@ -77,27 +97,30 @@
   &quot;fromUser&quot;: false
 }</component>
   <component name="ProjectId" id="3LfnAsLNNpSmYNmxkdQLMQJdG2b" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="1" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;Python.app.executor&quot;: &quot;Run&quot;,
-    &quot;Python.pdf_viewer.executor&quot;: &quot;Run&quot;,
-    &quot;Python.resume_screener.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
-    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;branch2&quot;,
-    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;D:/resume screener/MyCode-AI_basedResumeScreener&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;python.packages.toolwindow.project.migrated.to.right.top.v2&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "Python.app.executor": "Run",
+    "Python.pdf_viewer.executor": "Run",
+    "Python.resume_screener.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "codeWithMe.voiceChat.enabledByDefault": "false",
+    "git-widget-placeholder": "branch4",
+    "ignore.virus.scanning.warn.message": "true",
+    "last_opened_file_path": "D:/resume screener/MyCode-AI_basedResumeScreener",
+    "nodejs_package_manager_path": "npm",
+    "python.packages.toolwindow.project.migrated.to.right.top.v2": "true"
   }
-}</component>
+}]]></component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
@@ -118,6 +141,7 @@
       <workItem from="1793891304747" duration="2855000" />
       <workItem from="1793894295344" duration="15000" />
       <workItem from="1794012921537" duration="736000" />
+      <workItem from="1794025826478" duration="4150000" />
     </task>
     <servers />
   </component>
@@ -148,8 +172,8 @@
     </option>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/MyCode_AI_basedResumeScreener$app.coverage" NAME="app Coverage Results" MODIFIED="1793893538954" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/MyCode_AI_basedResumeScreener$app.coverage" NAME="app Coverage Results" MODIFIED="1794029024320" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/MyCode_AI_basedResumeScreener$pdf_viewer.coverage" NAME="pdf_viewer Coverage Results" MODIFIED="1793890768124" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/MyCode_AI_basedResumeScreener$resume_screener.coverage" NAME="resume_screener Coverage Results" MODIFIED="1793893064967" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/MyCode_AI_basedResumeScreener$resume_screener.coverage" NAME="resume_screener Coverage Results" MODIFIED="1794027634694" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>

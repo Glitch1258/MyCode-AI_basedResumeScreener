@@ -18,7 +18,6 @@ from typing import Iterable, List
 
 import pandas as pd
 
-
 MAX_FILTER_KEYWORDS = 25
 
 
@@ -82,10 +81,10 @@ def matches_processed_text(processed_text: str, keyword: str) -> bool:
 # Main filtering
 # --------------------------------------------------------------------------- #
 def filter_results_df(
-    full_results_df: pd.DataFrame,
-    keywords: List[str],
-    *,
-    require_all: bool = False,
+        full_results_df: pd.DataFrame,
+        keywords: List[str],
+        *,
+        require_all: bool = False,
 ) -> pd.DataFrame:
     """Filter results by keywords. Any-match by default (faceted-search style).
 

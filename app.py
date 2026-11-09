@@ -5,14 +5,14 @@ import tempfile
 
 import gradio as gr
 
-from pdf_viewer import cleanup_old_highlights
-from ui_helpers import EMPTY_PREVIEW_HTML
-from resume_filter import MAX_FILTER_KEYWORDS
-from filter_callbacks import add_keywords, on_filters_changed, clear_all_filters
 from callbacks import (
     process_resumes, save_results, on_row_select,
     clear_slot1, clear_slot2,
 )
+from filter_callbacks import add_keywords, on_filters_changed, clear_all_filters
+from pdf_viewer import cleanup_old_highlights
+from resume_filter import MAX_FILTER_KEYWORDS
+from ui_helpers import EMPTY_PREVIEW_HTML
 
 logger = logging.getLogger(__name__)
 
@@ -26,9 +26,9 @@ def create_gradio_interface():
         logger.warning(f"Temp cleanup failed (non-fatal): {e}")
 
     with gr.Blocks(
-        title="Resume Screening System",
-        css=".name-table { max-height: 760px; overflow-y: auto; }",
-        theme=gr.themes.Soft(),
+            title="Resume Screening System",
+            css=".name-table { max-height: 760px; overflow-y: auto; }",
+            theme=gr.themes.Soft(),
     ) as interface:
         gr.Markdown("""
         # 📄 Resume Screening System
@@ -36,12 +36,12 @@ def create_gradio_interface():
         """)
 
         # ---- State ----
-        full_results_state   = gr.State(value=None)
-        view_state           = gr.State(value=None)          # filtered+sorted view
-        keyword_choices_state = gr.State(value=[])           # all keywords shown in checkbox
-        slot1_state          = gr.State(value=None)
-        slot2_state          = gr.State(value=None)
-        active_slot_state    = gr.State(value=1)
+        full_results_state = gr.State(value=None)
+        view_state = gr.State(value=None)  # filtered+sorted view
+        keyword_choices_state = gr.State(value=[])  # all keywords shown in checkbox
+        slot1_state = gr.State(value=None)
+        slot2_state = gr.State(value=None)
+        active_slot_state = gr.State(value=1)
 
         # ---- Inputs ----
         with gr.Row():
@@ -64,7 +64,7 @@ def create_gradio_interface():
                     lines=1,
                 )
                 with gr.Row():
-                    add_filters_btn   = gr.Button("➕ Add keywords", size="sm", variant="secondary")
+                    add_filters_btn = gr.Button("➕ Add keywords", size="sm", variant="secondary")
                     clear_filters_btn = gr.Button("✖ Clear all filters", size="sm", variant="stop")
                 active_filters_cb = gr.CheckboxGroup(
                     choices=[], value=[],
@@ -85,7 +85,7 @@ def create_gradio_interface():
 
         with gr.Row():
             process_btn = gr.Button("🔍 Screen Resumes", variant="primary", scale=2)
-            save_btn    = gr.Button("💾 Save Results", variant="secondary", scale=1)
+            save_btn = gr.Button("💾 Save Results", variant="secondary", scale=1)
 
         processing_banner = gr.Markdown(value="", visible=False)
 
@@ -104,12 +104,12 @@ def create_gradio_interface():
                             with gr.Column(scale=1):
                                 with gr.Row():
                                     slot1_title = gr.Markdown("### Preview Slot 1")
-                                    clear1_btn  = gr.Button("✖ Clear", variant="stop", size="sm", scale=0)
+                                    clear1_btn = gr.Button("✖ Clear", variant="stop", size="sm", scale=0)
                                 slot1_html = gr.HTML(value=EMPTY_PREVIEW_HTML, label="Preview 1")
                             with gr.Column(scale=1):
                                 with gr.Row():
                                     slot2_title = gr.Markdown("### Preview Slot 2")
-                                    clear2_btn  = gr.Button("✖ Clear", variant="stop", size="sm", scale=0)
+                                    clear2_btn = gr.Button("✖ Clear", variant="stop", size="sm", scale=0)
                                 slot2_html = gr.HTML(value=EMPTY_PREVIEW_HTML, label="Preview 2")
                         preview_status = gr.Markdown("")
                 summary_output = gr.Markdown(label="Summary")
@@ -122,7 +122,7 @@ def create_gradio_interface():
                 2. Upload the job description (PDF or DOCX)
                 3. Toggle **Rerank with Cross-Encoder** ON/OFF
                 4. Click **🔍 Screen Resumes**
-                5. **Click any Candidate Name** to load their highlighted PDF into slots 1 and 2 alternately
+                5. **Click any Candidate Name** to load their highlighted PDF into the first **empty** preview slot.
                 6. Use **Open in new tab ↗** under a preview to open the highlighted resume
                 7. Use **✖ Clear** to reset a slot
                 8. Click **💾 Save Results** to export the full CSV

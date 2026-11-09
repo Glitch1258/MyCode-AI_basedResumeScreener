@@ -1,12 +1,6 @@
 # MyCode-AI\_basedResumeScreener
 
-
-
-
-
 How to use:
-
-
 
 1 Open CMD and navigate to file location and type "python resumeScreenerWrapper.py"
 

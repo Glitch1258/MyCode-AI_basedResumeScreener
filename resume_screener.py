@@ -304,4 +304,4 @@ class ResumeScreeningSystem:
         self.results.attrs['processed_texts'] = full_processed_texts
 
         logger.info(f"Screening complete. Found {len(self.results)} candidates.")
-        return self.results          # ← THIS WAS MISSING
+        return self.results  # ← THIS WAS MISSING

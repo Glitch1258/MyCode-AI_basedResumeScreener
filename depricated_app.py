@@ -2,16 +2,17 @@ import logging
 import os
 import shutil
 import tempfile
-import pandas as pd
-import gradio as gr
 from datetime import datetime
 
-from resume_screener import ResumeScreeningSystem
+import gradio as gr
+import pandas as pd
+
 from pdf_viewer import (
     highlight_keywords_in_pdf,
     cleanup_old_highlights,
     get_keywords_for_row,
 )
+from resume_screener import ResumeScreeningSystem
 
 logger = logging.getLogger(__name__)
 
@@ -326,9 +327,9 @@ def create_gradio_interface():
     # UI
     # ------------------------------------------------------------------
     with gr.Blocks(
-        title="Resume Screening System",
-        css=".name-table { max-height: 760px; overflow-y: auto; }",
-        theme=gr.themes.Soft(),
+            title="Resume Screening System",
+            css=".name-table { max-height: 760px; overflow-y: auto; }",
+            theme=gr.themes.Soft(),
     ) as interface:
         gr.Markdown("""
         # 📄 Resume Screening System
@@ -336,8 +337,8 @@ def create_gradio_interface():
         """)
 
         full_results_state = gr.State(value=None)
-        slot1_state = gr.State(value=None)   # None or (highlighted_path, original_path)
-        slot2_state = gr.State(value=None)   # None or (highlighted_path, original_path)
+        slot1_state = gr.State(value=None)  # None or (highlighted_path, original_path)
+        slot2_state = gr.State(value=None)  # None or (highlighted_path, original_path)
         active_slot_state = gr.State(value=1)
 
         # ---- Inputs row ----

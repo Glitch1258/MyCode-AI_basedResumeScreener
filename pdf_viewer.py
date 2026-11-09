@@ -21,7 +21,6 @@ from typing import Iterable, List, Optional, Tuple
 
 import pymupdf as fitz  # PyMuPDF (avoids the deprecated `fitz` shim)
 
-
 # -----------------------------------------------------------------------------
 # Internal helpers
 # -----------------------------------------------------------------------------
@@ -65,12 +64,12 @@ def _clean_keywords(keywords: Iterable[str]) -> List[str]:
 # -----------------------------------------------------------------------------
 
 def highlight_keywords_in_pdf(
-    pdf_path: str,
-    keywords: Iterable[str],
-    *,
-    max_keywords: int = 40,
-    color: Tuple[float, float, float] = (1.0, 0.9, 0.0),  # yellow-ish
-    open_result: bool = False,
+        pdf_path: str,
+        keywords: Iterable[str],
+        *,
+        max_keywords: int = 40,
+        color: Tuple[float, float, float] = (1.0, 0.9, 0.0),  # yellow-ish
+        open_result: bool = False,
 ) -> str:
     """
     Open `pdf_path`, highlight every occurrence of each keyword, and return
@@ -168,10 +167,10 @@ def cleanup_old_highlights(max_age_seconds: int = 3600) -> int:
 
 
 def get_keywords_for_row(
-    full_results_df,
-    row_index: int,
-    *,
-    keyword_column: str = "Extracted Keywords",
+        full_results_df,
+        row_index: int,
+        *,
+        keyword_column: str = "Extracted Keywords",
 ) -> Tuple[Optional[str], List[str], Optional[str]]:
     """
     Given the full results DataFrame (the hidden one in gr.State) and a row

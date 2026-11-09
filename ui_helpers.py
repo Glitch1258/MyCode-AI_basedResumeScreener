@@ -1,7 +1,6 @@
 """ui_helpers.py — HTML builders and constants for the Gradio UI."""
 import os
 
-
 EMPTY_PREVIEW_HTML = (
     "<div style='display:flex;align-items:center;justify-content:center;"
     "height:100%;min-height:600px;border:2px dashed #bbb;border-radius:8px;"
