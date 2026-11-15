@@ -1,7 +1,15 @@
+<<<<<<< HEAD
 import pandas as pd
 import re
 from fpdf import FPDF
 import os
+=======
+import os
+import re
+
+import pandas as pd
+from fpdf import FPDF
+>>>>>>> branch6
 
 # ── 1. Load the dataset ──────────────────────────────────────────────
 df = pd.read_csv("resume_dataset.csv")
@@ -82,4 +90,8 @@ for category in target_categories:
         except Exception as e:
             print(f"[✗] Failed {category} row {idx}: {e}")
 
+<<<<<<< HEAD
 print("\nDone. PDFs are in:", os.path.abspath(output_dir))
+=======
+print("\nDone. PDFs are in:", os.path.abspath(output_dir))
+>>>>>>> branch6

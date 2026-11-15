@@ -1,5 +1,6 @@
 # MyCode-AI\_basedResumeScreener
 
+<<<<<<< HEAD
 
 
 
@@ -8,6 +9,10 @@ How to use:
 
 
 
+=======
+How to use:
+
+>>>>>>> branch6
 1 Open CMD and navigate to file location and type "python resumeScreenerWrapper.py"
 
 2 Wait for the application to launch
