@@ -84,7 +84,7 @@ def filter_results_df(
         full_results_df: pd.DataFrame,
         keywords: List[str],
         *,
-        require_all: bool = False,
+        require_all: bool = True,
 ) -> pd.DataFrame:
     """Filter results by keywords. Any-match by default (faceted-search style).
 

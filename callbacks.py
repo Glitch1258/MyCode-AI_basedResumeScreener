@@ -8,7 +8,12 @@ import gradio as gr
 import pandas as pd
 
 from pdf_viewer import highlight_keywords_in_pdf
+from rating import (
+    DEFAULT_RATING, apply_ratings_to_df, get_rating,
+    initialize_ratings, make_display_df,
+)
 from resume_screener import ResumeScreeningSystem
+from star_rating import star_updates
 from ui_helpers import EMPTY_PREVIEW_HTML, slot_from_state
 
 logger = logging.getLogger(__name__)
@@ -18,22 +23,22 @@ def _path(f):
     return f.name if hasattr(f, "name") else f
 
 
-def _empty_results(msg):
-    """Returns 13 outputs matching process_resumes."""
+def _empty_results(msg, ratings=None):
+    """36 outputs matching process_resumes."""
     return (
-        pd.DataFrame(columns=["Candidate Name"]),
-        None,
-        None,
-        EMPTY_PREVIEW_HTML,
-        None,
-        EMPTY_PREVIEW_HTML,
-        None,
+        pd.DataFrame(columns=["Candidate Name", "⭐"]),
+        None, None,
+        EMPTY_PREVIEW_HTML, None,
+        EMPTY_PREVIEW_HTML, None,
         1,
         msg,
-        "### Preview Slot 1",
-        "### Preview Slot 2",
-        [],
-        gr.update(choices=[], value=[]),
+        "### Preview Slot 1", "### Preview Slot 2",
+        [], gr.update(choices=[], value=[]),
+        ratings or {},
+        False,
+        gr.update(value="⭐ Sort by Rating"),
+        *star_updates(DEFAULT_RATING),
+        *star_updates(DEFAULT_RATING),
     )
 
 
@@ -94,28 +99,30 @@ def process_resumes(resume_dir, jd_file, top_n, use_reranker, progress=gr.Progre
            - Top N candidates passed to Cross-Encoder: {system.top_n}
 
            ### Tip
-           Add **filter keywords** above to narrow results. Each click on a
-           Candidate Name loads their highlighted PDF into the first available preview slot.
-           Clear a slot (✖) to free it up.
+           Click a Candidate Name to load their highlighted PDF into a preview
+           slot. Use the ⭐ stars under each preview to rate 1–10.
+           Click **⭐ Sort by Rating** to sort the table by your ratings.
            """
 
         progress(1.0, desc="Complete!")
-        display_df = results_df[["Candidate Name"]].copy()
+
+        ratings = initialize_ratings(results_df)
+        display_df = make_display_df(results_df, ratings)
 
         return (
             display_df,
             results_df,
             results_df.copy(),
-            EMPTY_PREVIEW_HTML,
-            None,
-            EMPTY_PREVIEW_HTML,
-            None,
+            EMPTY_PREVIEW_HTML, None,
+            EMPTY_PREVIEW_HTML, None,
             1,
             summary,
-            "### Preview Slot 1",
-            "### Preview Slot 2",
-            [],
-            gr.update(choices=[], value=[]),
+            "### Preview Slot 1", "### Preview Slot 2",
+            [], gr.update(choices=[], value=[]),
+            ratings, False,
+            gr.update(value="⭐ Sort by Rating"),
+            *star_updates(DEFAULT_RATING),
+            *star_updates(DEFAULT_RATING),
         )
 
     except Exception as e:
@@ -123,22 +130,22 @@ def process_resumes(resume_dir, jd_file, top_n, use_reranker, progress=gr.Progre
         return _empty_results(f"❌ Error: {str(e)}")
 
 
-def save_results(full_results_df):
+def save_results(full_results_df, ratings):
     if full_results_df is None or full_results_df.empty:
         return "No results to save."
+    df = apply_ratings_to_df(full_results_df, ratings or {})
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     filename = f"resume_screening_results_{timestamp}.csv"
-    to_save = full_results_df.drop(columns=["row_id"], errors="ignore")
+    to_save = df.drop(columns=["row_id"], errors="ignore")
     to_save.to_csv(filename, index=False)
-    return f"Results saved to {filename} (full data with all columns)"
+    return f"Results saved to {filename} (includes user ratings)"
 
 
-def on_row_select(view_df, slot1, slot2, active_slot, evt: gr.SelectData):
-    """Row click → fill first empty slot (slot1 preferred)."""
-
+def on_row_select(view_df, slot1, slot2, active_slot, ratings, evt: gr.SelectData):
     def _unchanged(msg=""):
         return (gr.update(), slot1, gr.update(), slot2,
-                active_slot, msg, gr.update(), gr.update())
+                active_slot, msg, gr.update(), gr.update(),
+                *[gr.update()] * 10, *[gr.update()] * 10)
 
     if view_df is None or getattr(view_df, "empty", True):
         return _unchanged("")
@@ -210,6 +217,9 @@ def on_row_select(view_df, slot1, slot2, active_slot, evt: gr.SelectData):
     html1, title1 = slot_from_state(new_s1, 1)
     html2, title2 = slot_from_state(new_s2, 2)
 
+    rating1 = get_rating(ratings, new_s1[1] if new_s1 else None)
+    rating2 = get_rating(ratings, new_s2[1] if new_s2 else None)
+
     status = (
         f"Loaded **{candidate_name}** into Slot {target_slot} — "
         f"{len(keywords)} keyword(s) highlighted."
@@ -219,11 +229,12 @@ def on_row_select(view_df, slot1, slot2, active_slot, evt: gr.SelectData):
         gr.update(value=html1), new_s1,
         gr.update(value=html2), new_s2,
         new_active, status, title1, title2,
+        *star_updates(rating1),
+        *star_updates(rating2),
     )
 
 
 def _delete_file(path):
-    """Best-effort delete of a single file."""
     if not path:
         return
     try:
@@ -235,23 +246,27 @@ def _delete_file(path):
 
 
 def clear_slot1(slot1, slot2, active_slot):
-    # Delete the highlighted PDF that was being served for slot 1
     if slot1:
         try:
-            local_preview, _original = slot1
-            _delete_file(local_preview)
+            _delete_file(slot1[0])
         except Exception:
             pass
-    return (gr.update(value=EMPTY_PREVIEW_HTML), None, 1, "", "### Preview Slot 1")
+    return (
+        gr.update(value=EMPTY_PREVIEW_HTML), None, 1, "",
+        "### Preview Slot 1",
+        *star_updates(DEFAULT_RATING),
+    )
 
 
 def clear_slot2(slot1, slot2, active_slot):
-    # Delete the highlighted PDF that was being served for slot 2
     if slot2:
         try:
-            local_preview, _original = slot2
-            _delete_file(local_preview)
+            _delete_file(slot2[0])
         except Exception:
             pass
     new_active = 1 if slot1 is None else 2
-    return (gr.update(value=EMPTY_PREVIEW_HTML), None, new_active, "", "### Preview Slot 2")
+    return (
+        gr.update(value=EMPTY_PREVIEW_HTML), None, new_active, "",
+        "### Preview Slot 2",
+        *star_updates(DEFAULT_RATING),
+    )

@@ -1,4 +1,17 @@
 CSS = """
+/* ---- Star rating row ---- */
+.star-row {
+    gap: 4px !important;
+    flex-wrap: nowrap !important;
+    margin: 4px 0 8px 0 !important;
+}
+.star-btn {
+    min-width: 30px !important;
+    max-width: 30px !important;
+    padding: 0 !important;
+    font-size: 18px !important;
+    line-height: 1 !important;
+}
 .top-row {
     height: 30vh !important;
     max-height: 30vh !important;
@@ -29,8 +42,6 @@ CSS = """
 .filter-block .filter-checkbox > .label-wrap {
     flex: 0 0 auto !important;
 }
-
-/* Chip container: one horizontal scrolling row */
 .filter-block .filter-checkbox .wrap,
 .filter-block .filter-checkbox .grid {
     flex: 1 1 auto !important;
@@ -43,16 +54,12 @@ CSS = """
     overflow-y: hidden !important;
     max-height: 100% !important;
 }
-
-/* Individual chips keep their intrinsic width */
 .filter-block .filter-checkbox .wrap label,
 .filter-block .filter-checkbox .grid label {
     flex: 0 0 auto !important;
     white-space: nowrap !important;
     margin-right: 4px !important;
 }
-
-/* Slim horizontal scrollbar */
 .filter-block .filter-checkbox .wrap::-webkit-scrollbar,
 .filter-block .filter-checkbox .grid::-webkit-scrollbar {
     height: 6px;
@@ -73,6 +80,32 @@ CSS = """
 }
 
 .name-table { max-height: 760px; overflow-y: auto; }
+
+/* ---- Modal overlay (save/load dialogs) ---- */
+.modal-overlay {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    background: rgba(0, 0, 0, 0.5) !important;
+    z-index: 9999 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+.modal-box {
+    background: var(--block-background-fill, var(--background-fill-primary, #ffffff)) !important;
+    color: var(--body-text-color, inherit) !important;
+    border: 1px solid var(--border-color-primary, #e5e7eb) !important;
+    border-radius: 12px !important;
+    padding: 22px 26px !important;
+    min-width: 420px !important;
+    max-width: 640px !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+    display: block !important;
+}
 """
 
 SCROLL_LEFT_JS = """

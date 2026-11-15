@@ -195,3 +195,61 @@ def get_keywords_for_row(
         keywords = [k.strip() for k in str(raw_kw).split(",") if k.strip()]
 
     return pdf_path, keywords, name
+
+
+def purge_all_highlights() -> int:
+    """Delete ALL highlighted PDFs from the temp dir and the project root on startup."""
+    import os
+
+    deleted = 0
+
+    # 1) Delete from temp dir
+    for f in _TEMP_DIR.glob("highlight_*.pdf"):
+        try:
+            os.remove(f)
+            deleted += 1
+        except OSError:
+            continue
+
+    # 2) Delete from the actual project folder (where pdf_viewer.py lives)
+    project_root = Path(__file__).parent.resolve()
+    for f in project_root.glob("highlight_*.pdf"):
+        try:
+            os.remove(f)
+            deleted += 1
+        except OSError:
+            # Catches Windows file locks (if a PDF is still open in a preview)
+            continue
+
+    return deleted
+
+
+# def purge_all_highlights() -> int:
+#     """Delete ALL highlighted PDFs from the temp dir and from os.getcwd().
+#
+#     Called on app startup to remove leftovers from previous sessions that
+#     were never cleared (crashed app, closed tab while a preview was loaded,
+#     etc.). Matches only our own `highlight_*.pdf` naming convention, so
+#     nothing else in cwd or /tmp is touched.
+#     """
+#     import os
+#
+#     deleted = 0
+#
+#     # 1) temp-dir highlights created by highlight_keywords_in_pdf()
+#     for f in _TEMP_DIR.glob("highlight_*.pdf"):
+#         try:
+#             os.remove(f)
+#             deleted += 1
+#         except OSError:
+#             continue
+#
+#     # 2) cwd copies made by on_row_select() for iframe serving
+#     for f in Path(os.getcwd()).glob("highlight_*.pdf"):
+#         try:
+#             os.remove(f)
+#             deleted += 1
+#         except OSError:
+#             continue
+#
+#     return deleted

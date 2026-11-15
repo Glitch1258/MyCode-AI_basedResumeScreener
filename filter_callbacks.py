@@ -7,6 +7,7 @@ from typing import List
 import gradio as gr
 import pandas as pd
 
+from rating import make_display_df, sort_by_user_rating
 from resume_filter import MAX_FILTER_KEYWORDS, clean_keywords, filter_results_df
 
 
@@ -14,7 +15,6 @@ from resume_filter import MAX_FILTER_KEYWORDS, clean_keywords, filter_results_df
 # Helpers
 # --------------------------------------------------------------------------- #
 def _split_input(raw: str) -> List[str]:
-    """Parse the textbox into individual keywords (comma or semicolon separated)."""
     if not raw:
         return []
     parts: List[str] = []
@@ -25,22 +25,18 @@ def _split_input(raw: str) -> List[str]:
     return parts
 
 
-def _make_display_df(view_df: pd.DataFrame) -> pd.DataFrame:
-    if view_df is None or view_df.empty or "Candidate Name" not in view_df.columns:
-        return pd.DataFrame(columns=["Candidate Name"])
-    return view_df[["Candidate Name"]].copy()
+def _render_view(full_results_df, active_keywords, sort_active, ratings):
+    """Filter, optionally sort by rating, and produce the display DataFrame."""
+    view = filter_results_df(full_results_df, list(active_keywords or []))
+    if sort_active:
+        view = sort_by_user_rating(view, ratings or {}, ascending=False)
+    return make_display_df(view, ratings), view
 
 
 # --------------------------------------------------------------------------- #
 # Add keywords
 # --------------------------------------------------------------------------- #
 def add_keywords(current_choices, current_active, raw_input):
-    """Add user-typed keywords to the active filter list.
-
-    Outputs: keyword_choices_state, active_filters_cb, filter_keywords_input, filter_status
-    Note: does NOT re-run the filter itself — the CheckboxGroup `.change` event
-    fires when `active_filters_cb` is updated, which handles filtering.
-    """
     new_kws = _split_input(raw_input)
     if not new_kws:
         return current_choices, gr.update(), raw_input, "Type some keywords first."
@@ -72,31 +68,26 @@ def add_keywords(current_choices, current_active, raw_input):
 
 
 # --------------------------------------------------------------------------- #
-# Filter on checkbox change
+# Filter on checkbox change (sort + ratings threaded through)
 # --------------------------------------------------------------------------- #
-def on_filters_changed(full_results_df, active_keywords):
-    """Re-filter the results when the checkbox value changes.
-
-    Outputs: results_output, view_state
-    """
-    view_df = filter_results_df(full_results_df, list(active_keywords or []))
-    return _make_display_df(view_df), view_df
+def on_filters_changed(full_results_df, active_keywords, sort_by_rating, ratings):
+    """Outputs: results_output, view_state"""
+    display, view = _render_view(full_results_df, active_keywords,
+                                 sort_by_rating, ratings)
+    return display, view
 
 
 # --------------------------------------------------------------------------- #
 # Clear all
 # --------------------------------------------------------------------------- #
-def clear_all_filters(full_results_df):
-    """Reset filters to empty and unfilter the results.
-
-    Outputs: keyword_choices_state, active_filters_cb, filter_status,
-             results_output, view_state
-    """
-    view_df = filter_results_df(full_results_df, [])
+def clear_all_filters(full_results_df, sort_by_rating, ratings):
+    """Outputs: keyword_choices_state, active_filters_cb, filter_status,
+                results_output, view_state"""
+    display, view = _render_view(full_results_df, [], sort_by_rating, ratings)
     return (
         [],
         gr.update(choices=[], value=[]),
         "Cleared all filter keywords.",
-        _make_display_df(view_df),
-        view_df,
+        display,
+        view,
     )
